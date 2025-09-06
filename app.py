@@ -2,19 +2,21 @@ import streamlit as st
 import pandas as pd
 from ydata_profiling import ProfileReport
 from ydata_profiling.config import Settings
-import os
 
 st.set_page_config(page_title='Data Profiler', layout='wide')
 
 # --- Helper functions ---
 def get_filesize(file):
-    size_bytes = os.path.getsize(file.name) if hasattr(file, 'name') else len(file.read())
+    """Get file size in MB safely for Streamlit UploadedFile"""
+    size_bytes = file.size
     size_mb = size_bytes / (1024**2)
     return size_mb
 
 def validate_file(file):
+    """Validate file extension"""
     filename = file.name
-    _, ext = os.path.splitext(filename)
+    _, ext = filename.rsplit('.', 1)
+    ext = '.' + ext.lower()
     if ext in ('.csv', '.xlsx'):
         return ext
     return False
@@ -27,14 +29,11 @@ def st_display_profile(pr):
 
 # --- Sidebar ---
 with st.sidebar:
-    uploaded_file = st.file_uploader("Upload .csv, .xlsx files not exceeding 10 MB")
+    uploaded_file = st.file_uploader("Upload .csv or .xlsx files (Max 10 MB)")
     if uploaded_file is not None:
         st.write('Modes of Operation')
-        minimal = st.checkbox('Do you want minimal report ?')
-        display_mode = st.radio(
-            'Display mode:',
-            options=('Primary', 'Dark', 'Orange')
-        )
+        minimal = st.checkbox('Do you want minimal report?')
+        display_mode = st.radio('Display mode:', options=('Primary', 'Dark', 'Orange'))
 
 # --- Main App ---
 if uploaded_file is not None:
@@ -52,22 +51,23 @@ if uploaded_file is not None:
                 df = xl_file.parse(sheet_name)
 
             # Generate report
-            with st.spinner('Generating Report...'):
+            with st.spinner('Generating Profiling Report...'):
                 # Configure theme
-                if display_mode == "Dark":
-                    config = Settings(plot={"theme": "dark"})
-                elif display_mode == "Orange":
-                    config = Settings(plot={"theme": "orange"})
-                else:
-                    config = Settings()
+                if uploaded_file is not None:
+                    if display_mode == "Dark":
+                        config = Settings(plot={"theme": "dark"})
+                    elif display_mode == "Orange":
+                        config = Settings(plot={"theme": "orange"})
+                    else:
+                        config = Settings()
 
                 pr = ProfileReport(df, minimal=minimal, config=config)
-
             st_display_profile(pr)
+
         else:
-            st.error(f'Maximum allowed filesize is 10 MB. But received {filesize:.2f} MB')
+            st.error(f'Maximum allowed filesize is 10 MB. Received: {filesize:.2f} MB')
     else:
-        st.error('Kindly upload only .csv or .xlsx file')
+        st.error('Kindly upload only .csv or .xlsx files')
 else:
     st.title('📊 Data Profiler')
     st.info('Upload your data in the left sidebar to generate profiling report')
