@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from ydata_profiling import ProfileReport
+from ydata_profiling.config import Settings
 import sys
 import os
 
@@ -30,17 +31,10 @@ with st.sidebar:
     if uploaded_file is not None:
         st.write('Modes of Operation')
         minimal = st.checkbox('Do you want minimal report ?')
-        display_mode = st.radio('Display mode:',
-                                options=('Primary','Dark','Orange'))
-        if display_mode == 'Dark':
-            dark_mode = True
-            orange_mode = False
-        elif display_mode == 'Orange':
-            dark_mode = False
-            orange_mode = True
-        else:
-            dark_mode = False
-            orange_mode = False
+        display_mode = st.radio(
+            'Display mode:',
+            options=('Primary', 'Dark', 'Orange')
+        )
 
 # Main
 if uploaded_file is not None:
@@ -58,10 +52,15 @@ if uploaded_file is not None:
 
             # Generate report
             with st.spinner('Generating Report...'):
-                pr = ProfileReport(df,
-                                   minimal=minimal,
-                                   dark_mode=dark_mode,
-                                   orange_mode=orange_mode)
+                # Configure theme
+                if display_mode == "Dark":
+                    config = Settings(plot={"theme": "dark"})
+                elif display_mode == "Orange":
+                    config = Settings(plot={"theme": "orange"})
+                else:
+                    config = Settings()
+
+                pr = ProfileReport(df, minimal=minimal, config=config)
 
             st_display_profile(pr)
         else:
