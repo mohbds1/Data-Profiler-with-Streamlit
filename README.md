@@ -30,7 +30,7 @@ It supports **CSV and Excel files**, and provides insights into distributions, c
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com//data-profiler-with-.git
+git clone https://github.com/mohbds1/Data-Profiler-with-Streamlit.git
 cd data-profiler
 ```
 
