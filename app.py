@@ -1,11 +1,10 @@
-import streamlit as st 
-import pandas as pd 
+import streamlit as st
+import pandas as pd
 from ydata_profiling import ProfileReport
-from streamlit_pandas_profiling import st_profile_report
 import sys
 import os
-st.set_page_config(page_title='Data Profiler',layout='wide')
 
+st.set_page_config(page_title='Data Profiler', layout='wide')
 
 def get_filesize(file):
     size_bytes = sys.getsizeof(file)
@@ -15,13 +14,17 @@ def get_filesize(file):
 def validate_file(file):
     filename = file.name
     name, ext = os.path.splitext(filename)
-    if ext in ('.csv','.xlsx'):
+    if ext in ('.csv', '.xlsx'):
         return ext
     else:
         return False
-    
 
-# sidebar
+def st_display_profile(pr):
+    """Embed ProfileReport in Streamlit app via HTML"""
+    pr_html = pr.to_html()
+    st.components.v1.html(pr_html, height=1000, scrolling=True)
+
+# Sidebar
 with st.sidebar:
     uploaded_file = st.file_uploader("Upload .csv, .xlsx files not exceeding 10 MB")
     if uploaded_file is not None:
@@ -30,7 +33,7 @@ with st.sidebar:
         display_mode = st.radio('Display mode:',
                                 options=('Primary','Dark','Orange'))
         if display_mode == 'Dark':
-            dark_mode= True
+            dark_mode = True
             orange_mode = False
         elif display_mode == 'Orange':
             dark_mode = False
@@ -38,39 +41,33 @@ with st.sidebar:
         else:
             dark_mode = False
             orange_mode = False
-        
-    
+
+# Main
 if uploaded_file is not None:
     ext = validate_file(uploaded_file)
     if ext:
         filesize = get_filesize(uploaded_file)
         if filesize <= 10:
             if ext == '.csv':
-                # time being let load csv
                 df = pd.read_csv(uploaded_file)
             else:
                 xl_file = pd.ExcelFile(uploaded_file)
                 sheet_tuple = tuple(xl_file.sheet_names)
-                sheet_name = st.sidebar.selectbox('Select the sheet',sheet_tuple)
+                sheet_name = st.sidebar.selectbox('Select the sheet', sheet_tuple)
                 df = xl_file.parse(sheet_name)
-                
-                
-            # generate report
-            with st.spinner('Generating Report'):
+
+            # Generate report
+            with st.spinner('Generating Report...'):
                 pr = ProfileReport(df,
-                                minimal=minimal,
-                                dark_mode=dark_mode,
-                                orange_mode=orange_mode
-                                )
-                
-            st_profile_report(pr)
+                                   minimal=minimal,
+                                   dark_mode=dark_mode,
+                                   orange_mode=orange_mode)
+
+            st_display_profile(pr)
         else:
-            st.error(f'Maximum allowed filesize is 10 MB. But received {filesize} MB')
-            
+            st.error(f'Maximum allowed filesize is 10 MB. But received {filesize:.2f} MB')
     else:
         st.error('Kindly upload only .csv or .xlsx file')
-        
 else:
-    st.title('Data Profiler')
-    st.info('Upload your data in the left sidebar to generate profiling')
-    
+    st.title('📊 Data Profiler')
+    st.info('Upload your data in the left sidebar to generate profiling report')
