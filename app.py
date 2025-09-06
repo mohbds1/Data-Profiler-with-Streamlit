@@ -31,9 +31,7 @@ def st_display_profile(pr):
 with st.sidebar:
     uploaded_file = st.file_uploader("Upload .csv or .xlsx files (Max 10 MB)")
     if uploaded_file is not None:
-        st.write('Modes of Operation')
         minimal = st.checkbox('Do you want minimal report?')
-        display_mode = st.radio('Display mode:', options=('Primary', 'Dark', 'Orange'))
 
 # --- Main App ---
 if uploaded_file is not None:
@@ -52,16 +50,7 @@ if uploaded_file is not None:
 
             # Generate report
             with st.spinner('Generating Profiling Report...'):
-                # Configure theme
-                if uploaded_file is not None:
-                    if display_mode == "Dark":
-                        config = Settings(plot={"theme": "dark"})
-                    elif display_mode == "Orange":
-                        config = Settings(plot={"theme": "orange"})
-                    else:
-                        config = Settings()
-
-                pr = ProfileReport(df, minimal=minimal, config=config)
+                pr = ProfileReport(df, minimal=minimal)
             st_display_profile(pr)
 
         else:
