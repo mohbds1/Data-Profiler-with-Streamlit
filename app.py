@@ -2,30 +2,30 @@ import streamlit as st
 import pandas as pd
 from ydata_profiling import ProfileReport
 from ydata_profiling.config import Settings
-import sys
 import os
 
 st.set_page_config(page_title='Data Profiler', layout='wide')
 
+# --- Helper functions ---
 def get_filesize(file):
-    size_bytes = sys.getsizeof(file)
+    size_bytes = os.path.getsize(file.name) if hasattr(file, 'name') else len(file.read())
     size_mb = size_bytes / (1024**2)
     return size_mb
 
 def validate_file(file):
     filename = file.name
-    name, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
     if ext in ('.csv', '.xlsx'):
         return ext
-    else:
-        return False
+    return False
 
 def st_display_profile(pr):
-    """Embed ProfileReport in Streamlit app via HTML"""
+    """Embed ProfileReport in Streamlit app via HTML safely"""
     pr_html = pr.to_html()
-    st.components.v1.html(pr_html, height=1000, scrolling=True)
+    import streamlit.components.v1 as components
+    components.html(pr_html, height=1000, scrolling=True)
 
-# Sidebar
+# --- Sidebar ---
 with st.sidebar:
     uploaded_file = st.file_uploader("Upload .csv, .xlsx files not exceeding 10 MB")
     if uploaded_file is not None:
@@ -36,12 +36,13 @@ with st.sidebar:
             options=('Primary', 'Dark', 'Orange')
         )
 
-# Main
+# --- Main App ---
 if uploaded_file is not None:
     ext = validate_file(uploaded_file)
     if ext:
         filesize = get_filesize(uploaded_file)
         if filesize <= 10:
+            # Load file
             if ext == '.csv':
                 df = pd.read_csv(uploaded_file)
             else:
