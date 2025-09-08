@@ -10,7 +10,6 @@ It supports **CSV and Excel files**, and provides insights into distributions, c
 * 📂 Upload `.csv` and `.xlsx` files (up to **10 MB**)
 * 📑 Select sheets when uploading Excel files
 * ⚡ Generate **detailed** or **minimal** profiling reports
-* 🎨 Switch between **Primary**, **Dark**, and **Orange** themes
 * 🔍 Explore statistics, distributions, correlations, missing data, and more
 
 ---
@@ -56,14 +55,6 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
-
-
----
-
-## 📌 Notes
-
-* This project uses `pandas-profiling==3.6.6` to enable **Dark** and **Orange** themes.
-* Newer versions of `ydata-profiling` have deprecated theme options.
 
 ---
 
